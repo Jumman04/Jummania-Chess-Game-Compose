@@ -1,24 +1,31 @@
 package com.jummania
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
+import com.jummania.model.SquareColors
+import com.jummania.model.Stroke
+import com.jummania.model.SymbolStyle
 
 
 /**
@@ -27,44 +34,36 @@ import androidx.compose.ui.unit.sp
  * Dhaka, Bangladesh.
  */
 
+var isInvalidate: Boolean = false
+
 @Composable
-fun ChessBoardCanvas(font: Font) {
-    var touchedX: Float = 0f
-    var touchedY: Float = 0f
+fun ChessBoardCanvas(
+    message: (String) -> Unit,
+    chessController: ChessController = ChessController(message = message),
+    squareColors: SquareColors = SquareColors(),
+    symbolStyle: SymbolStyle = SymbolStyle(),
+    stroke: Stroke = Stroke()
+) {
 
     var selectedRowNumber = -1
     var isSelected: Boolean = false
-    var isInvalidate: Boolean = false
-    var enableStroke: Boolean = true
 
-    var arkSquareColor = Color(0xFF8E4F19)
-    var lightSquareColor: Color = Color(0xFFFADEAF)
-    val darkSquareColor: Color = Color(0xFF8E4F19)
+    val chessFont: FontFamily = FontFamily(getFont(symbolStyle.style, symbolStyle.useBoldSymbol))
 
-    val chessFont: FontFamily = FontFamily(font)
-
-    // Convert padding to pixels
-    //  val paddingPx = with(LocalDensity.current) { boardPadding.toPx() }
-
-    // Paints for text drawing
-    val symbolPaint = Paint()
-    val paint = Paint()
-
-
-    val chessController = ChessController(true, true, Color.White, Color.Black) {
-
-    }
+    var clickPosition by remember { mutableStateOf(Offset.Zero) }
 
     fun swapTo(fromIndex: Int, toIndex: Int, isOnline: Boolean): Boolean {
         val isSwapped = chessController.swapTo(fromIndex, toIndex, isOnline)
+
         if (isSwapped) {
             isSelected = false
-            selectedRowNumber = -1
             isInvalidate = true
-            // invalidate()
+            selectedRowNumber = -1
+            clickPosition = Offset.Zero
         } else if (isOnline) {
             chessController.sendData()
         }
+
         return isSwapped
     }
 
@@ -95,11 +94,25 @@ fun ChessBoardCanvas(font: Font) {
         }
     }
 
+    val density = LocalDensity.current
+    fun getFontSizeFromSquareSize(squareSize: Float): TextUnit {
+        return with(density) { squareSize.toSp() }
+    }
+
 
     // Create a text measurer
     val textMeasurer = rememberTextMeasurer()
 
-    Canvas(modifier = Modifier.fillMaxSize()) {
+    Canvas(
+        modifier = Modifier.fillMaxSize().pointerInput(Unit) {
+            detectTapGestures {
+                isInvalidate = false
+                clickPosition = it
+            }
+        }) {
+
+        println("invalidate()")
+
         val width = size.width
         val height = size.height
 
@@ -124,13 +137,13 @@ fun ChessBoardCanvas(font: Font) {
                 rowIndex++
 
                 // Check if the touch event is within the bounds of the current square
-                if (touchedX in left..right && touchedY in top..bottom) {
+                if (clickPosition.x in left..right && clickPosition.y in top..bottom) {
                     touchedInside = handleTouch(rowIndex)  // Handle the touch (selection or move)
                 }
 
                 // Draw the current square with the appropriate color
                 drawRect(
-                    color = if (isDarkSquare) darkSquareColor else lightSquareColor,
+                    color = if (isDarkSquare) squareColors.darkSquareColor else squareColors.lightSquareColor,
                     topLeft = Offset(left, top),
                     size = Size(right - left, bottom - top)
                 )
@@ -143,7 +156,7 @@ fun ChessBoardCanvas(font: Font) {
                         color = Color.Red,
                         topLeft = Offset(left + padding, top + padding),
                         size = Size((right - left) - 2 * padding, (bottom - top) - 2 * padding),
-                        style = Stroke(width = padding)
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = padding)
                     )
                 }
 
@@ -151,17 +164,16 @@ fun ChessBoardCanvas(font: Font) {
                 val piece = chessController.get(rowIndex)
                 if (piece != null) {
 
-                    val textSize = squareSize * 0.4f // Symbol size as a percentage of square size
-                    val centerX = left + textSize / 2
+                    val textSize = squareSize * 0.7f // Symbol size as a percentage of square size
+                    val centerX = left + textSize / 3
+                    val centerY = top + textSize / 5
                     val symbol = piece.symbol
                     val isLightPiece = chessController.isLightPiece(piece)
-                    val strokeLightColor = Color.LightGray // Use your color here
-                    val strokeDarkColor = Color.DarkGray // Use your color here
 
                     // Create a text style for drawing the symbol
                     val textStyle = TextStyle(
                         color = piece.color,
-                        fontSize = textSize.sp,
+                        fontSize = getFontSizeFromSquareSize(textSize),
                         fontWeight = FontWeight.Normal,
                         textAlign = TextAlign.Center,
                         fontFamily = chessFont
@@ -174,7 +186,7 @@ fun ChessBoardCanvas(font: Font) {
                     )
 
                     // If stroke effect is enabled
-                    if (enableStroke) {
+                    if (stroke.enableStroke) {
                         // Determine whether to draw a background behind the symbol based on the piece's color
                         val shouldDrawBackground = if (isLightPiece) {
                             !chessController.isLightFilled
@@ -190,8 +202,8 @@ fun ChessBoardCanvas(font: Font) {
                         if (shouldDrawBackground) {
                             drawText(
                                 textLayoutResult = transformedSymbol,
-                                brush = SolidColor(if (isLightPiece) strokeLightColor else strokeDarkColor),
-                                topLeft = Offset(centerX, top)
+                                brush = SolidColor(if (isLightPiece) stroke.strokeLightColor else stroke.strokeDarkColor),
+                                topLeft = Offset(centerX, centerY)
                             )
                         }
 
@@ -199,7 +211,7 @@ fun ChessBoardCanvas(font: Font) {
                         drawText(
                             textLayoutResult = textLayoutResult,
                             brush = SolidColor(piece.color),
-                            topLeft = Offset(centerX, top)
+                            topLeft = Offset(centerX, centerY)
                         )
 
                         // Draw top layer of the symbol if the piece is filled
@@ -212,8 +224,8 @@ fun ChessBoardCanvas(font: Font) {
                         if (shouldDrawTopLayer) {
                             drawText(
                                 textLayoutResult = transformedSymbol,
-                                brush = SolidColor(if (isLightPiece) strokeLightColor else strokeDarkColor),
-                                topLeft = Offset(centerX, top)
+                                brush = SolidColor(if (isLightPiece) stroke.strokeLightColor else stroke.strokeDarkColor),
+                                topLeft = Offset(centerX, centerY)
                             )
                         }
                     } else {
@@ -221,7 +233,7 @@ fun ChessBoardCanvas(font: Font) {
                         drawText(
                             textLayoutResult = textLayoutResult,
                             brush = SolidColor(piece.color),
-                            topLeft = Offset(centerX, top)
+                            topLeft = Offset(centerX, centerY)
                         )
                     }
                 }
@@ -230,5 +242,14 @@ fun ChessBoardCanvas(font: Font) {
                 isDarkSquare = !isDarkSquare
             }
         }
+
+        if (!touchedInside) isSelected = false
+
+        drawRect(
+            color = Color.Black,
+            topLeft = Offset(boardLeft - 2.5f, boardTop - 2.5f),
+            size = Size(minSize + 5f, minSize + 5f),
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f)
+        )
     }
 }

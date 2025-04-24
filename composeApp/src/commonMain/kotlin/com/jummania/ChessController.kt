@@ -2,6 +2,7 @@ package com.jummania
 
 
 import androidx.compose.ui.graphics.Color
+import com.jummania.model.Piece
 
 
 /**
@@ -25,11 +26,11 @@ import androidx.compose.ui.graphics.Color
  * @see Piece
  * @see Castling
  */
-internal class ChessController(
-    val isLightFilled: Boolean,
-    val isDarkFilled: Boolean,
-    private val pieceLightColor: Color,
-    val pieceDarkColor: Color,
+class ChessController(
+    val isLightFilled: Boolean = true,
+    val isDarkFilled: Boolean = true,
+    private val pieceLightColor: Color = Color.White,
+    private val pieceDarkColor: Color = Color.Black,
     private val message: (String) -> Unit
 ) {
 

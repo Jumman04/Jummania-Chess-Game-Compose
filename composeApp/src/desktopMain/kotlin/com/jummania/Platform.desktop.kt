@@ -1,6 +1,5 @@
 package com.jummania
 
-import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
@@ -10,12 +9,6 @@ import jummaniachessgamecompose.composeapp.generated.resources.chess_merida_unic
 import jummaniachessgamecompose.composeapp.generated.resources.symbola
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.FontResource
-
-class AndroidPlatform : Platform {
-    override val name: String = "Android ${Build.VERSION.SDK_INT}"
-}
-
-actual fun getPlatform(): Platform = AndroidPlatform()
 
 @Composable
 actual fun getFont(symbolStyle: SymbolStyle, useBoldSymbol: Boolean): Font {
