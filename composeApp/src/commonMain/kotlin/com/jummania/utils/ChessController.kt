@@ -1,4 +1,4 @@
-package com.jummania
+package com.jummania.utils
 
 
 import androidx.compose.ui.graphics.Color
@@ -30,8 +30,7 @@ class ChessController(
     val isLightFilled: Boolean = true,
     val isDarkFilled: Boolean = true,
     private val pieceLightColor: Color = Color.White,
-    private val pieceDarkColor: Color = Color.Black,
-    private val message: (String) -> Unit
+    private val pieceDarkColor: Color = Color.Black
 ) {
 
     companion object {
@@ -39,6 +38,9 @@ class ChessController(
     }
 
 
+    private var notifier: UserNotifier? = null
+
+    //  private val message: ((String) -> Unit)? = null
     private var playingOnline: Boolean = false
 
     // The symbols used for light and dark pieces, depending on whether they are filled or unfilled
@@ -874,6 +876,8 @@ class ChessController(
 
         var selected = 0
 
+      //  notifier?.arrayDialog("Revive Your Pawn", symbols, selected)
+
         /*
         MaterialAlertDialogBuilder(context).setTitle("Revive Your Pawn")
             .setSingleChoiceItems(symbols, selected) { _, which ->
@@ -934,6 +938,14 @@ class ChessController(
 
     fun fromOnline(): Boolean {
         return isWhiteTurn && playingOnline
+    }
+
+    private fun message(message: String) {
+        notifier?.message(message)
+    }
+
+    fun registerNotifier(notifier: UserNotifier) {
+        this.notifier = notifier
     }
 
 

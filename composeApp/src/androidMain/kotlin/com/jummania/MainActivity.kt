@@ -1,7 +1,6 @@
 package com.jummania
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
@@ -11,9 +10,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            App {
-                Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
-            }
+            App()
         }
     }
 }

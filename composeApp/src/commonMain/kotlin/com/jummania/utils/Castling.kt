@@ -1,4 +1,4 @@
-package com.jummania
+package com.jummania.utils
 
 
 /**

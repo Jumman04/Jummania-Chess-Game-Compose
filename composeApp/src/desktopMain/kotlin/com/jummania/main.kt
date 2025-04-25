@@ -14,23 +14,6 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         title = "Jummania Chess Game Compose",
     ) {
-
-        var toastMessage by remember { mutableStateOf("") }
-        var showToast by remember { mutableStateOf(false) }
-
-        // Auto-hide toast
-        LaunchedEffect(showToast) {
-            if (showToast) {
-                kotlinx.coroutines.delay(3000)
-                showToast = false
-            }
-        }
-
-        App { message ->
-            toastMessage = message
-            showToast = true
-        }
-
-        Toast(message = toastMessage, visible = showToast)
+        App()
     }
 }

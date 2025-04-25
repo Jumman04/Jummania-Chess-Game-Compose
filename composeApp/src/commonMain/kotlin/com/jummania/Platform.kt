@@ -2,6 +2,7 @@ package com.jummania
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.Font
+import com.jummania.utils.SymbolStyle
 
 interface Platform {
     val name: String

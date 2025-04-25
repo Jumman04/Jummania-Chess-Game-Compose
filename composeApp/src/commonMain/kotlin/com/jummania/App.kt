@@ -6,8 +6,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
-fun App(message: (String) -> Unit) {
+fun App() {
     MaterialTheme {
-        ChessBoardCanvas(message = message)
+        ChessBoardCanvas()
     }
 }

@@ -3,6 +3,7 @@ package com.jummania
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
+import com.jummania.utils.SymbolStyle
 import jummaniachessgamecompose.composeapp.generated.resources.Res
 import jummaniachessgamecompose.composeapp.generated.resources.chess_alpha
 import jummaniachessgamecompose.composeapp.generated.resources.chess_merida_unicode

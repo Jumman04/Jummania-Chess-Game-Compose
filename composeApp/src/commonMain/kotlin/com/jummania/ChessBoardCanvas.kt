@@ -26,6 +26,9 @@ import androidx.compose.ui.unit.TextUnit
 import com.jummania.model.SquareColors
 import com.jummania.model.Stroke
 import com.jummania.model.SymbolStyle
+import com.jummania.utils.ChessController
+import com.jummania.utils.Toast
+import com.jummania.utils.UserNotifier
 
 
 /**
@@ -35,11 +38,11 @@ import com.jummania.model.SymbolStyle
  */
 
 var isInvalidate: Boolean = false
+val toast = Toast()
 
 @Composable
 fun ChessBoardCanvas(
-    message: (String) -> Unit,
-    chessController: ChessController = ChessController(message = message),
+    chessController: ChessController = ChessController(),
     squareColors: SquareColors = SquareColors(),
     symbolStyle: SymbolStyle = SymbolStyle(),
     stroke: Stroke = Stroke()
@@ -48,7 +51,7 @@ fun ChessBoardCanvas(
     var selectedRowNumber = -1
     var isSelected: Boolean = false
 
-    val chessFont: FontFamily = FontFamily(getFont(symbolStyle.style, symbolStyle.useBoldSymbol))
+    val chessFont: FontFamily = FontFamily(getFont(symbolStyle.style, symbolStyle.useBold))
 
     var clickPosition by remember { mutableStateOf(Offset.Zero) }
 
@@ -143,7 +146,7 @@ fun ChessBoardCanvas(
 
                 // Draw the current square with the appropriate color
                 drawRect(
-                    color = if (isDarkSquare) squareColors.darkSquareColor else squareColors.lightSquareColor,
+                    color = if (isDarkSquare) squareColors.darkColor else squareColors.lightColor,
                     topLeft = Offset(left, top),
                     size = Size(right - left, bottom - top)
                 )
@@ -186,7 +189,7 @@ fun ChessBoardCanvas(
                     )
 
                     // If stroke effect is enabled
-                    if (stroke.enableStroke) {
+                    if (stroke.enabled) {
                         // Determine whether to draw a background behind the symbol based on the piece's color
                         val shouldDrawBackground = if (isLightPiece) {
                             !chessController.isLightFilled
@@ -202,7 +205,7 @@ fun ChessBoardCanvas(
                         if (shouldDrawBackground) {
                             drawText(
                                 textLayoutResult = transformedSymbol,
-                                brush = SolidColor(if (isLightPiece) stroke.strokeLightColor else stroke.strokeDarkColor),
+                                brush = SolidColor(if (isLightPiece) stroke.lightColor else stroke.darkColor),
                                 topLeft = Offset(centerX, centerY)
                             )
                         }
@@ -224,7 +227,7 @@ fun ChessBoardCanvas(
                         if (shouldDrawTopLayer) {
                             drawText(
                                 textLayoutResult = transformedSymbol,
-                                brush = SolidColor(if (isLightPiece) stroke.strokeLightColor else stroke.strokeDarkColor),
+                                brush = SolidColor(if (isLightPiece) stroke.lightColor else stroke.darkColor),
                                 topLeft = Offset(centerX, centerY)
                             )
                         }
@@ -252,4 +255,21 @@ fun ChessBoardCanvas(
             style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f)
         )
     }
+
+    toast.initialize()
+    chessController.registerNotifier(object : UserNotifier {
+        override fun message(message: String) {
+            toast.show(message)
+        }
+
+        override fun dialog(title: String, description: String, onConfirm: () -> Unit) {
+            TODO("Not yet implemented")
+        }
+
+        override fun arrayDialog(
+            title: String, options: Array<String>, onSelected: (Int) -> Unit
+        ) {
+            TODO("Not yet implemented")
+        }
+    })
 }
