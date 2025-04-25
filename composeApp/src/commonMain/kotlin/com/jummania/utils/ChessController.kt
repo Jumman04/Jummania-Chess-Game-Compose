@@ -70,8 +70,6 @@ class ChessController(
 
 
     // A function that will be executed after a revival event (e.g., when a piece is revived or game state is restored).
-// The function will be assigned at runtime.
-    private lateinit var afterRevival: (() -> Unit)
 
     private var onlinePlayer: ((String, String) -> Unit)? = null
 
@@ -92,36 +90,7 @@ class ChessController(
 
 
     init {
-        // Initialize the chessboard with light pieces (first 8 squares)
-        // The pieces are placed in their respective positions based on the `lightPieces` array.
-        // `lightPieces` should contain the symbols for each light piece (e.g., rook, knight, etc.)
-        for (i in lightPieces.indices) {
-            chessBoard[i] =
-                lightPieces[i]  // Place each light piece at its respective position on the board (0 to 7)
-        }
-
-        // Set the symbol for light pawns. If the pieces are filled (i.e., more stylized), use ♟; otherwise, use ♙.
-        val lightPawnSymbol = if (isLightFilled) "♟" else "♙"
-        // Place light pawns in the second rank (index 8 to 15)
-        for (i in 8 until 16) {
-            chessBoard[i] = Piece(
-                lightPawnSymbol, pieceLightColor
-            )  // Assign pawn symbol and color for the light player
-        }
-
-        // Set the symbol for dark pawns. If the pieces are filled, use ♟; otherwise, use ♙.
-        val darkPawnSymbol = if (isDarkFilled) "♟" else "♙"
-        // Place dark pawns in the second-to-last rank (index 48 to 55)
-        for (i in 48 until 56) {
-            chessBoard[i] = Piece(
-                darkPawnSymbol, pieceDarkColor
-            )  // Assign pawn symbol and color for the dark player
-        }
-
-        // Initialize the dark pieces (pieces for the dark player) on their starting positions
-        for (i in darkPieces.indices) {
-            chessBoard[56 + i] = darkPieces[i]  // Place dark pieces from indices 56 to 63
-        }
+        reset(false)  // Initialize the game with a new board
     }
 
 
@@ -323,7 +292,7 @@ class ChessController(
         } else if (isKing) {
             if (isWhiteTurn) whiteCastling.markKingMoved() else blackCastling.markKingMoved()  // Mark the king as moved for castling
         } else if (fromPiece.isPawn() && pawnCanRevive(toIndex)) {
-            revivePawn(toIndex)  // Check if the pawn can be promoted to a new piece (e.g., Queen)
+            showRevivePawnDialog(toIndex)  // Check if the pawn can be promoted to a new piece (e.g., Queen)
         }
 
         // Handle capture or checkmate scenarios
@@ -862,54 +831,33 @@ class ChessController(
         return (if (isWhiteTurn) position in 56..63 else position in 0..7) && chessBoard[position]?.isPawn() == true
     }
 
+    fun showRevivePawnDialog(position: Int) {
+        notifier?.revivePawnDialog(position)
+    }
+
     /**
      * Shows a dialog to revive a pawn into another chess piece.
      * Updates the board and invokes post-revival logic.
      *
      * @param position The position of the pawn to be revived.
      */
-    fun revivePawn(position: Int) {
-        val symbols = if ((if (isWhiteTurn) isLightFilled else isDarkFilled)) arrayOf(
+    fun revivePawn(position: Int, symbol: String) {
+        val piece = chessBoard[position]
+        if (piece != null) {
+            piece.symbol = symbol
+            chessBoard[position] = piece
+        }
+
+        message("The Pawn has been revived to $symbol")
+        notifier?.afterRevival()
+    }
+
+    fun getReviveSymbols(): Array<String> {
+        return if ((if (isWhiteTurn) isLightFilled else isDarkFilled)) arrayOf(
             "♛", "♜", "♝", "♞"
-        ) // White turn, light theme
-        else arrayOf("♕", "♖", "♗", "♘") // Black turn, dark theme
-
-        var selected = 0
-
-      //  notifier?.arrayDialog("Revive Your Pawn", symbols, selected)
-
-        /*
-        MaterialAlertDialogBuilder(context).setTitle("Revive Your Pawn")
-            .setSingleChoiceItems(symbols, selected) { _, which ->
-                selected = which
-            }.setPositiveButton("Okay") { _, _ ->
-                val symbol = symbols[selected]
-
-                val piece = chessBoard[position]
-                if (piece != null) {
-                    piece.symbol = symbol
-                    chessBoard[position] = piece
-                }
-
-                afterRevival()
-                message("The Pawn revived to $symbol")
-            }.setNegativeButton("Cancel", null).show()
-
-         */
+        ) else arrayOf("♕", "♖", "♗", "♘")
     }
 
-
-    /**
-     * Sets a callback function to be executed after a revival action.
-     * This function allows the game logic to define what should happen after
-     * a specific revival action (such as when a pawn reaches the promotion rank
-     * and is revived into another piece).
-     *
-     * @param afterRevival A callback function that will be executed after the revival action.
-     */
-    fun setAfterRevival(afterRevival: () -> Unit) {
-        this.afterRevival = afterRevival
-    }
 
     fun setOnlinePlayer(onlinePlayer: (String, String) -> Unit) {
         this.onlinePlayer = onlinePlayer
@@ -946,6 +894,41 @@ class ChessController(
 
     fun registerNotifier(notifier: UserNotifier) {
         this.notifier = notifier
+    }
+
+    fun reset(boolean: Boolean) {
+        // Initialize the chessboard with light pieces (first 8 squares)
+        // The pieces are placed in their respective positions based on the `lightPieces` array.
+        // `lightPieces` should contain the symbols for each light piece (e.g., rook, knight, etc.)
+        for (i in lightPieces.indices) {
+            chessBoard[i] =
+                lightPieces[i]  // Place each light piece at its respective position on the board (0 to 7)
+        }
+
+        // Set the symbol for light pawns. If the pieces are filled (i.e., more stylized), use ♟; otherwise, use ♙.
+        val lightPawnSymbol = if (isLightFilled) "♟" else "♙"
+        // Place light pawns in the second rank (index 8 to 15)
+        for (i in 8 until 16) {
+            chessBoard[i] = Piece(
+                lightPawnSymbol, pieceLightColor
+            )  // Assign pawn symbol and color for the light player
+        }
+
+        if (boolean) for (i in 16 until 48) chessBoard[i] = null
+
+        // Set the symbol for dark pawns. If the pieces are filled, use ♟; otherwise, use ♙.
+        val darkPawnSymbol = if (isDarkFilled) "♟" else "♙"
+        // Place dark pawns in the second-to-last rank (index 48 to 55)
+        for (i in 48 until 56) {
+            chessBoard[i] = Piece(
+                darkPawnSymbol, pieceDarkColor
+            )  // Assign pawn symbol and color for the dark player
+        }
+
+        // Initialize the dark pieces (pieces for the dark player) on their starting positions
+        for (i in darkPieces.indices) {
+            chessBoard[56 + i] = darkPieces[i]  // Place dark pieces from indices 56 to 63
+        }
     }
 
 

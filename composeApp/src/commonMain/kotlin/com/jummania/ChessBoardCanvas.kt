@@ -27,6 +27,8 @@ import com.jummania.model.SquareColors
 import com.jummania.model.Stroke
 import com.jummania.model.SymbolStyle
 import com.jummania.utils.ChessController
+import com.jummania.utils.SimpleDialog
+import com.jummania.utils.SingleChoiceDialog
 import com.jummania.utils.Toast
 import com.jummania.utils.UserNotifier
 
@@ -38,11 +40,14 @@ import com.jummania.utils.UserNotifier
  */
 
 var isInvalidate: Boolean = false
+var toIndex: Int = -1
 val toast = Toast()
+
+val defaultChessController = ChessController()
 
 @Composable
 fun ChessBoardCanvas(
-    chessController: ChessController = ChessController(),
+    chessController: ChessController = defaultChessController,
     squareColors: SquareColors = SquareColors(),
     symbolStyle: SymbolStyle = SymbolStyle(),
     stroke: Stroke = Stroke()
@@ -55,14 +60,18 @@ fun ChessBoardCanvas(
 
     var clickPosition by remember { mutableStateOf(Offset.Zero) }
 
+    fun invalidate() {
+        isSelected = false
+        isInvalidate = true
+        selectedRowNumber = -1
+        clickPosition = Offset.Zero
+    }
+
     fun swapTo(fromIndex: Int, toIndex: Int, isOnline: Boolean): Boolean {
         val isSwapped = chessController.swapTo(fromIndex, toIndex, isOnline)
 
         if (isSwapped) {
-            isSelected = false
-            isInvalidate = true
-            selectedRowNumber = -1
-            clickPosition = Offset.Zero
+            invalidate()
         } else if (isOnline) {
             chessController.sendData()
         }
@@ -257,19 +266,42 @@ fun ChessBoardCanvas(
     }
 
     toast.initialize()
+
+    var showGameEndDialog by remember { mutableStateOf(false) }
+    var showRevivePawnDialog by remember { mutableStateOf(false) }
+
+    SimpleDialog(showGameEndDialog, "Game Over", "Do you want to play again?") {
+        invalidate()
+        chessController.reset(true)
+        showGameEndDialog = false
+    }
+
+    if (showRevivePawnDialog) {
+        val reviveSymbols = chessController.getReviveSymbols()
+        SingleChoiceDialog("Revive Your Pawn", reviveSymbols) {
+            chessController.revivePawn(toIndex, reviveSymbols[it])
+            showRevivePawnDialog = false
+        }
+    }
+
+
+
     chessController.registerNotifier(object : UserNotifier {
         override fun message(message: String) {
             toast.show(message)
         }
 
-        override fun dialog(title: String, description: String, onConfirm: () -> Unit) {
-            TODO("Not yet implemented")
+        override fun gameEndDialogue() {
+            showGameEndDialog = true
         }
 
-        override fun arrayDialog(
-            title: String, options: Array<String>, onSelected: (Int) -> Unit
-        ) {
-            TODO("Not yet implemented")
+        override fun revivePawnDialog(position: Int) {
+            toIndex = position
+            showRevivePawnDialog = true
+        }
+
+        override fun afterRevival() {
+
         }
     })
 }

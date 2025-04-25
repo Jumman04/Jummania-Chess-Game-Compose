@@ -33,6 +33,7 @@ class Toast {
 
     @Composable
     fun initialize() {
+
         LaunchedEffect(message) {
             delay(duration)
             message = null

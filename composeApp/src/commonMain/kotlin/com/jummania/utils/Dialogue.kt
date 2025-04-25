@@ -3,9 +3,7 @@ package com.jummania.utils
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.RadioButton
@@ -18,21 +16,16 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SimpleDialog(
-    show: Boolean, title: String, description: String, onDismiss: () -> Unit, onConfirm: () -> Unit
+    show: Boolean, title: String, description: String, onConfirm: () -> Unit
 ) {
     if (show) {
         AlertDialog(
-            onDismissRequest = onDismiss,
+            onDismissRequest = {},
             title = { Text(title) },
             text = { Text(description) },
             confirmButton = {
                 TextButton(onClick = onConfirm) {
                     Text("Confirm")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismiss) {
-                    Text("Cancel")
                 }
             })
     }
@@ -40,33 +33,26 @@ fun SimpleDialog(
 
 @Composable
 fun SingleChoiceDialog(
-    show: Boolean,
-    title: String,
-    options: Array<String>,
-    selectedIndex: Int,
-    onOptionSelected: (Int) -> Unit,
-    onDismiss: () -> Unit
+    title: String, options: Array<String>, onOptionSelected: (Int) -> Unit
 ) {
-    if (show) {
-        AlertDialog(onDismissRequest = onDismiss, title = { Text(title) }, text = {
-            Column {
-               // Spacer(Modifier.height(8.dp))
-                options.forEachIndexed { index, option ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                            .clickable { onOptionSelected(index) }) {
-                        RadioButton(
-                            selected = index == selectedIndex,
-                            onClick = { onOptionSelected(index) })
-                        Text(text = option)
-                    }
+    AlertDialog(onDismissRequest = {}, title = { Text(title) }, text = {
+        Column {
+            // Spacer(Modifier.height(8.dp))
+            options.forEachIndexed { index, option ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                        .clickable { onOptionSelected(index) }) {
+                    RadioButton(
+                        selected = index == 0, onClick = { onOptionSelected(index) })
+                    Text(text = option)
                 }
             }
-        }, confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("OK")
-            }
-        })
-    }
+        }
+    }, confirmButton = {
+        TextButton(onClick = {}) {
+            Text("OK")
+        }
+    })
+
 }
