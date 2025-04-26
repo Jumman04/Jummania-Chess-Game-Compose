@@ -33,26 +33,32 @@ fun SimpleDialog(
 
 @Composable
 fun SingleChoiceDialog(
-    title: String, options: Array<String>, onOptionSelected: (Int) -> Unit
+    show: Boolean,
+    chessController: ChessController,
+    title: String,
+    onOptionSelected: (String) -> Unit
 ) {
-    AlertDialog(onDismissRequest = {}, title = { Text(title) }, text = {
-        Column {
-            // Spacer(Modifier.height(8.dp))
-            options.forEachIndexed { index, option ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                        .clickable { onOptionSelected(index) }) {
-                    RadioButton(
-                        selected = index == 0, onClick = { onOptionSelected(index) })
-                    Text(text = option)
+    if (show) {
+        val reviveSymbols = chessController.getReviveSymbols()
+        AlertDialog(onDismissRequest = {}, title = { Text(title) }, text = {
+            Column {
+                reviveSymbols.forEachIndexed { index, option ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                            .clickable { onOptionSelected(reviveSymbols[index]) }) {
+                        RadioButton(
+                            selected = index == 0,
+                            onClick = { onOptionSelected(reviveSymbols[index]) })
+                        Text(text = option)
+                    }
                 }
             }
-        }
-    }, confirmButton = {
-        TextButton(onClick = {}) {
-            Text("OK")
-        }
-    })
+        }, confirmButton = {
+            TextButton(onClick = { onOptionSelected(reviveSymbols[0]) }) {
+                Text("OK")
+            }
+        })
+    }
 
 }

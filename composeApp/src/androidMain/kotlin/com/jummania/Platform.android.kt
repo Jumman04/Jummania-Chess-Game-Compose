@@ -2,6 +2,7 @@ package com.jummania
 
 import android.os.Build
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import com.jummania.utils.SymbolStyle
@@ -9,8 +10,10 @@ import jummaniachessgamecompose.composeapp.generated.resources.Res
 import jummaniachessgamecompose.composeapp.generated.resources.chess_alpha
 import jummaniachessgamecompose.composeapp.generated.resources.chess_merida_unicode
 import jummaniachessgamecompose.composeapp.generated.resources.symbola
+import jummaniachessgamecompose.composeapp.generated.resources.transform
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.FontResource
+import org.jetbrains.compose.resources.imageResource
 
 class AndroidPlatform : Platform {
     override val name: String = "Android ${Build.VERSION.SDK_INT}"

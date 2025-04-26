@@ -27,6 +27,7 @@ import com.jummania.model.SquareColors
 import com.jummania.model.Stroke
 import com.jummania.model.SymbolStyle
 import com.jummania.utils.ChessController
+import com.jummania.utils.ChessController.Companion.isWhiteTurn
 import com.jummania.utils.SimpleDialog
 import com.jummania.utils.SingleChoiceDialog
 import com.jummania.utils.Toast
@@ -57,6 +58,7 @@ fun ChessBoardCanvas(
     var isSelected: Boolean = false
 
     val chessFont: FontFamily = FontFamily(getFont(symbolStyle.style, symbolStyle.useBold))
+    // val bitmap = getBitmap()
 
     var clickPosition by remember { mutableStateOf(Offset.Zero) }
 
@@ -186,7 +188,7 @@ fun ChessBoardCanvas(
                     val textStyle = TextStyle(
                         color = piece.color,
                         fontSize = getFontSizeFromSquareSize(textSize),
-                        fontWeight = FontWeight.Normal,
+                        fontWeight = if (symbolStyle.useBold) FontWeight.Bold else FontWeight.Normal,
                         textAlign = TextAlign.Center,
                         fontFamily = chessFont
                     )
@@ -263,6 +265,29 @@ fun ChessBoardCanvas(
             size = Size(minSize + 5f, minSize + 5f),
             style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f)
         )
+
+        // Create a text style for drawing the symbol
+        val textStyle = TextStyle(
+            color = Color.Red,
+            fontSize = getFontSizeFromSquareSize(22f),
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            fontFamily = chessFont
+        )
+
+        val textLayoutResult: TextLayoutResult = textMeasurer.measure(
+            text = "Player ${if (isWhiteTurn) "X" else "Y"} Turn", style = textStyle
+        )
+
+        val textWidth = textLayoutResult.size.width
+
+        drawText(
+            textLayoutResult = textLayoutResult, brush = SolidColor(Color.Black), topLeft = Offset(
+                if (isWhiteTurn) boardLeft - textWidth * 2 else minSize + boardLeft + textWidth,
+                minSize / 2
+            )
+        )
+
     }
 
     toast.initialize()
@@ -276,14 +301,10 @@ fun ChessBoardCanvas(
         showGameEndDialog = false
     }
 
-    if (showRevivePawnDialog) {
-        val reviveSymbols = chessController.getReviveSymbols()
-        SingleChoiceDialog("Revive Your Pawn", reviveSymbols) {
-            chessController.revivePawn(toIndex, reviveSymbols[it])
-            showRevivePawnDialog = false
-        }
+    SingleChoiceDialog(showRevivePawnDialog, chessController, "Revive Your Pawn") {
+        chessController.revivePawn(toIndex, it)
+        showRevivePawnDialog = false
     }
-
 
 
     chessController.registerNotifier(object : UserNotifier {
@@ -304,4 +325,6 @@ fun ChessBoardCanvas(
 
         }
     })
+
+
 }
