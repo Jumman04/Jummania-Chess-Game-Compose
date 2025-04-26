@@ -7,9 +7,7 @@
    <a href="https://github.com/Jumman04/Jummania-Chess-Game-Compose/stargazers">
    <img src="https://img.shields.io/github/stars/Jumman04/Jummania-Chess-Game-Compose" alt="GitHub Stars"/>
    </a>
-   <a href="https://github.com/Jumman04/Jummania-Chess-Game-Compose/blob/master/LICENSE.md">
-    <img src="https://img.shields.io/github/license/Jumman04/Jummania-Chess-Game-Compose.svg" alt="GitHub License"/>
-   </a>
+<img src="https://img.shields.io/github/license/Jumman04/Jummania-Chess-Game-Compose.svg?cacheBust=1" />
 </p>
 
 # ♟️ Jummania-Chess-Game-Compose — Customizable Chess Game for Compose Multiplatform
