@@ -55,10 +55,9 @@ fun ChessBoardCanvas(
 ) {
 
     var selectedRowNumber = -1
-    var isSelected: Boolean = false
+    var isSelected = false
 
-    val chessFont: FontFamily = FontFamily(getFont(symbolStyle.style, symbolStyle.useBold))
-    // val bitmap = getBitmap()
+    val chessFont = FontFamily(getFont(symbolStyle.style))
 
     var clickPosition by remember { mutableStateOf(Offset.Zero) }
 
@@ -135,6 +134,8 @@ fun ChessBoardCanvas(
         val boardLeft = (width - minSize) / 2f  // Horizontal starting point for the board
         val boardTop = (height - minSize) / 2f  // Vertical starting point for the board
         val squareSize = minSize / 8f  // Size of each square on the chessboard
+        val textSize = squareSize * 0.7f // Symbol size as a percentage of square size
+        val fontSize = getFontSizeFromSquareSize(textSize)
 
         var rowIndex = -1  // Initialize the row index
         var touchedInside = false  // Flag to check if the touch is inside a square
@@ -177,8 +178,6 @@ fun ChessBoardCanvas(
                 // Draw the chess piece in the current square, if one exists
                 val piece = chessController.get(rowIndex)
                 if (piece != null) {
-
-                    val textSize = squareSize * 0.7f // Symbol size as a percentage of square size
                     val centerX = left + textSize / 3
                     val centerY = top + textSize / 5
                     val symbol = piece.symbol
@@ -187,7 +186,7 @@ fun ChessBoardCanvas(
                     // Create a text style for drawing the symbol
                     val textStyle = TextStyle(
                         color = piece.color,
-                        fontSize = getFontSizeFromSquareSize(textSize),
+                        fontSize = fontSize,
                         fontWeight = if (symbolStyle.useBold) FontWeight.Bold else FontWeight.Normal,
                         textAlign = TextAlign.Center,
                         fontFamily = chessFont
@@ -267,25 +266,44 @@ fun ChessBoardCanvas(
         )
 
         // Create a text style for drawing the symbol
-        val textStyle = TextStyle(
-            color = Color.Red,
-            fontSize = getFontSizeFromSquareSize(22f),
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            fontFamily = chessFont
-        )
-
         val textLayoutResult: TextLayoutResult = textMeasurer.measure(
-            text = "Player ${if (isWhiteTurn) "X" else "Y"} Turn", style = textStyle
+            text = "Player ${if (isWhiteTurn) "X" else "Y"} Turn", style = TextStyle(
+                color = Color.Red,
+                fontSize = fontSize / 2f,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                fontFamily = chessFont
+            )
         )
 
         val textWidth = textLayoutResult.size.width
 
+        val indicatorY: Float
+        val textX: Float
+
+        if (height > width) {
+            // Portrait mode
+            indicatorY = if (isWhiteTurn) {
+                boardTop - squareSize
+            } else {
+                boardTop + minSize + squareSize / 2
+            }
+            textX = (width - textWidth) / 2f  // Properly center text horizontally
+        } else {
+            // Landscape mode
+            indicatorY = minSize / 2f  // Center vertically
+            textX = if (isWhiteTurn) {
+                boardLeft / 2f - textWidth / 2f  // Center text on the left side
+            } else {
+                boardLeft + minSize + (width - boardLeft - minSize) / 2f - textWidth / 2f  // Center text on the right side
+            }
+        }
+
+        // Finally draw the text
         drawText(
-            textLayoutResult = textLayoutResult, brush = SolidColor(Color.Black), topLeft = Offset(
-                if (isWhiteTurn) boardLeft - textWidth * 2 else minSize + boardLeft + textWidth,
-                minSize / 2
-            )
+            textLayoutResult = textLayoutResult,
+            brush = SolidColor(Color.Black),
+            topLeft = Offset(textX, indicatorY)
         )
 
     }

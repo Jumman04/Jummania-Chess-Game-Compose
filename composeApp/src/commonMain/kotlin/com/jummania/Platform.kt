@@ -11,4 +11,4 @@ interface Platform {
 expect fun getPlatform(): Platform
 
 @Composable
-expect fun getFont(symbolStyle: SymbolStyle, useBoldSymbol: Boolean): Font
+expect fun getFont(symbolStyle: SymbolStyle): Font
