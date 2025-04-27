@@ -10,7 +10,7 @@
 <img src="https://img.shields.io/github/license/Jumman04/Jummania-Chess-Game-Compose.svg?cacheBust=1" />
 </p>
 
-# ♟️ Jummania-Chess-Game-Compose — Customizable Chess Game for Compose Multiplatform
+# ♟️ Jummania-Chess-Game-Compose<br>— Customizable Chess Game for Compose Multiplatform
 
 **Jummania-Chess-Game-Compose** is a fully-functional, customizable chess game built with **Jetpack
 Compose Multiplatform**.  
